@@ -1,0 +1,14 @@
+{
+  "name": "airports",
+  "version": "1.0.0",
+  "description": "",
+  "main": "parse_airports.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "csv-parse": "5.3.6"
+  }
+}
