@@ -17,7 +17,10 @@ const WRITE_JSON_PATH = `./airports-${dateNow.getDate()}-${
 }-${dateNow.getFullYear()}.json`;
 const LABEL_ENUM_PATH = `./airports-${dateNow.getDate()}-${
   dateNow.getMonth() + 1
-}-${dateNow.getFullYear()}.enum.ts`;
+}-${dateNow.getFullYear()}-labels.enum.ts`;
+const IATA_ENUM_PATH = `./airports-${dateNow.getDate()}-${
+  dateNow.getMonth() + 1
+}-${dateNow.getFullYear()}-iata.enum.ts`;
 
 const bootstrap = async () => {
   const res = await fetch(CSV_URL);
@@ -28,7 +31,8 @@ const bootstrap = async () => {
   await writeFile(WRITE_CSV_PATH, csvData);
 
   const results = {};
-  let enumResult = "export enum AirportLabels {";
+  let labelEnumResult = "export enum AirportLabels {";
+  let iataEnumResult = "export enum Airports {";
 
   const readStream = createReadStream(WRITE_CSV_PATH);
 
@@ -42,7 +46,13 @@ const bootstrap = async () => {
   parser.on("data", (record) => {
     if (!record.iata_code || !record.icao_code) return;
     if (results[record.iata_code]) return;
-    enumResult += `${record.iata_code} = '${record.name.replaceAll(
+
+    labelEnumResult += `${record.iata_code} = '${record.name.replaceAll(
+      "'",
+      "\\'"
+    )}',\n`;
+
+    iataEnumResult += `${record.iata_code} = '${record.iata_code.replaceAll(
       "'",
       "\\'"
     )}',\n`;
@@ -51,9 +61,12 @@ const bootstrap = async () => {
   });
 
   parser.on("end", async () => {
-    enumResult += "}";
+    labelEnumResult += "}";
+    iataEnumResult += "}";
+
     await writeFile(WRITE_JSON_PATH, JSON.stringify(results));
-    await writeFile(LABEL_ENUM_PATH, enumResult);
+    await writeFile(LABEL_ENUM_PATH, labelEnumResult);
+    await writeFile(IATA_ENUM_PATH, iataEnumResult);
   });
 
   pipeline(readStream, parser, (err) => console.error(err));
